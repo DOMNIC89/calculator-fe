@@ -1,5 +1,6 @@
 import {render, screen, fireEvent} from '@testing-library/react';
 import Calculator from './calculator';
+import {config} from '../Constants';
 
 test('Check the presence of title', () => {
     render(<Calculator />);
@@ -35,7 +36,8 @@ test('Check the presence of title', () => {
       const obj = {
           question: "7*5",
           answer: 35,
-          timestamp: new Date().toLocaleString()
+          timestamp: new Date().toLocaleString(),
+          user: localStorage.getItem('username')
       }
 
       const requestPayload = {"body": JSON.stringify(obj), "headers": {"content-type": "application/json"}, "method": "POST"}
@@ -44,7 +46,7 @@ test('Check the presence of title', () => {
       fireEvent.click(screen.getByText("*"));
       fireEvent.click(screen.getByText(/5/i));
       fireEvent.click(screen.getByText(/=/i));
-      expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/api/v1/calculator-activity', requestPayload);
+      expect(global.fetch).toHaveBeenCalledWith(config.url.POST_CALCULATOR_ACTIVITY, requestPayload);
       expect(screen.getByLabelText("answer")).toHaveValue('35');
 
   })

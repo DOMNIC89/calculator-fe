@@ -1,8 +1,9 @@
 import React from 'react';
-import CalculatorTitle from './calculatorTitle'
-import OutputScreen from './outputScreen'
-import Button from './button'
+import CalculatorTitle from './calculatorTitle';
+import OutputScreen from './outputScreen';
+import Button from './button';
 import {config} from '../Constants';
+import {uniqueNamesGenerator, names} from 'unique-names-generator';
 
 class Calculator extends React.Component {
     
@@ -14,6 +15,15 @@ class Calculator extends React.Component {
         }
 
         this.handleClick = this.handleClick.bind(this);
+    }
+
+    componentDidMount() {
+        const configuration = {
+            dictionaries: [names]
+        };
+        if (!localStorage.getItem("username")) {
+            localStorage.setItem("username", uniqueNamesGenerator(configuration));
+        }
     }
 
     handleClick(event) {
@@ -55,13 +65,19 @@ class Calculator extends React.Component {
         const requestOptions = {
             method: 'POST',
             headers: {'content-type': 'application/json'},
-            body: JSON.stringify({question: this.state.question, answer: ans, timestamp: new Date().toLocaleString()})
+            body: JSON.stringify(
+                {
+                    question: this.state.question, 
+                    answer: ans, 
+                    timestamp: new Date().toLocaleString(),
+                    user: localStorage.getItem('username')
+                })
         };
 
         fetch(config.url.POST_CALCULATOR_ACTIVITY, requestOptions)
             .then(async response => {
                 const data = await response.json();
-                if (!response.ok()) {
+                if (!response.ok) {
                     // show a toast to display the message
                     const err = {};
                     console.log(data);
