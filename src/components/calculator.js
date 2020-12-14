@@ -1,9 +1,11 @@
+/* eslint-disable */
 import React from 'react';
 import CalculatorTitle from './calculatorTitle';
 import OutputScreen from './outputScreen';
 import Button from './button';
 import {config} from '../Constants';
 import {uniqueNamesGenerator, names} from 'unique-names-generator';
+import Feed from './feedActivity';
 
 class Calculator extends React.Component {
     
@@ -11,19 +13,66 @@ class Calculator extends React.Component {
         super();
         this.state = {
             question: '',
-            answer: ''
+            answer: '',
+            messages: [],
         }
 
         this.handleClick = this.handleClick.bind(this);
+        this.fetchLastActivities = this.fetchLastActivities.bind(this);
+    }
+
+    fetchLastActivities() {
+        const requestOptions = {
+            method: 'GET',
+            headers: {'content-type': 'application/json'}
+        };
+
+        fetch(config.url.GET_CALCULATOR_ACTIVITY).then( async response => {
+            if (!response.ok) {
+                // show a toast to display the message
+                const err = {};
+                return Promise.reject(err);
+            }
+            const data = await response.json()
+            console.log(data);
+            this.setState({messages: data});
+        })
+        .catch(err => {
+                console.log("there was some error", err)
+        });
     }
 
     componentDidMount() {
         const configuration = {
             dictionaries: [names]
         };
+
         if (!localStorage.getItem("username")) {
             localStorage.setItem("username", uniqueNamesGenerator(configuration));
         }
+
+        var mqtt = require('mqtt');
+        var clientid = localStorage.getItem("username")
+        var options = {
+            protocol: 'mqtts',
+            clientId: clientid,
+            username: config.credentials.MQTT_USERNAME,
+            password: config.credentials.MQTT_PASSWORD
+        }
+        this.client = mqtt.connect('mqtt://'+config.url.MQTT_HOST+":"+config.url.MQTT_PORT, options);
+        this.client.on('error', function(error) {
+            console.log(error);
+        })
+        this.client.subscribe("calculatorsezzle");
+        this.client.on('message', function(topic, message) {
+            const list = this.state.messages;
+            if(list.length >= 10) {
+                list.splice(-1);
+            }
+            this.setState({messages: [JSON.parse(message.toString()), ...list]});
+           
+        }.bind(this));
+        this.fetchLastActivities();
     }
 
     handleClick(event) {
@@ -68,20 +117,18 @@ class Calculator extends React.Component {
             body: JSON.stringify(
                 {
                     question: this.state.question, 
-                    answer: ans, 
-                    timestamp: new Date().toLocaleString(),
+                    answer: ans.toString(), 
+                    timestamp: new Date().toISOString(),
                     user: localStorage.getItem('username')
                 })
         };
 
         fetch(config.url.POST_CALCULATOR_ACTIVITY, requestOptions)
             .then(async response => {
-                const data = await response.json();
                 if (!response.ok) {
                     // show a toast to display the message
-                    const err = {};
-                    console.log(data);
-                    return Promise.reject(err);
+                    
+                    return Promise.reject({});
                 }
             })
             .catch(err => {
@@ -90,6 +137,13 @@ class Calculator extends React.Component {
     }
 
     render() {
+        const areMessagesPresent = this.state.messages.length > 0;
+        let feedUI;
+        if (areMessagesPresent) {
+            feedUI = <Feed feeds={this.state.messages} />
+        } else {
+            feedUI = <div className="mainFeed" />
+        }
         return (
             <div className="frame">
                 <CalculatorTitle value="Sezzle Calculator" />
@@ -124,9 +178,10 @@ class Calculator extends React.Component {
                         <Button label={'='} handleClick={this.handleClick}/> 
                     </div>
                 </div>
+                {feedUI}
             </div>
         );
     }
 }
 
-export default Calculator;
+export default Calculator

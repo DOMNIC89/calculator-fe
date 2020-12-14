@@ -33,47 +33,66 @@ test('Check the presence of title', () => {
           json: mockJsonPromise,
       });
 
-      const obj = {
-          question: "7*5",
-          answer: 35,
-          timestamp: new Date().toLocaleString(),
-          user: localStorage.getItem('username')
-      }
-
-      const requestPayload = {"body": JSON.stringify(obj), "headers": {"content-type": "application/json"}, "method": "POST"}
       jest.spyOn(global, 'fetch').mockImplementation(() => mockFetchPromise);
       fireEvent.click(screen.getByText(/7/i));
       fireEvent.click(screen.getByText("*"));
       fireEvent.click(screen.getByText(/5/i));
       fireEvent.click(screen.getByText(/=/i));
+      const requestPayload = {"body": JSON.stringify({
+        question: "7*5",
+        answer: "35",
+        timestamp: new Date().toISOString(),
+        user: localStorage.getItem('username')
+    })}
       expect(global.fetch).toHaveBeenCalledWith(config.url.POST_CALCULATOR_ACTIVITY, requestPayload);
       expect(screen.getByLabelText("answer")).toHaveValue('35');
-
   })
 
   test('When clear is called the question row should be cleared', () => {
-      render(<Calculator />);
-      screen.getByLabelText(/question/i).value='78';
-      fireEvent.change(screen.getByLabelText(/question/i), {target: {value: '78'}})
-      fireEvent.click(screen.getByText(/Clear/i));
-      expect(screen.getByLabelText(/question/i)).toHaveDisplayValue("")
+    const mockResponseSuccess = {};
+    const mockJsonPromise = Promise.resolve(mockResponseSuccess);
+    const mockFetchPromise = Promise.resolve( {
+        json: mockJsonPromise,
+    });
+
+    jest.spyOn(global, 'fetch').mockImplementation(() => mockFetchPromise);  
+    render(<Calculator />);
+    screen.getByLabelText(/question/i).value='78';
+    fireEvent.change(screen.getByLabelText(/question/i), {target: {value: '78'}})
+    fireEvent.click(screen.getByText(/Clear/i));
+    expect(screen.getByLabelText(/question/i)).toHaveDisplayValue("")
   })
 
   test('When clear is called the answer input should be cleared', () => {
-      const utils = render(<Calculator />);
-      utils.getByLabelText(/answer/i).value='25';   
-      fireEvent.change(utils.getByLabelText(/answer/i), {
-          target: {value: '25'}
+        const mockResponseSuccess = {};
+        const mockJsonPromise = Promise.resolve(mockResponseSuccess);
+        const mockFetchPromise = Promise.resolve( {
+            json: mockJsonPromise,
         });
-      fireEvent.click(screen.getByText(/Clear/i));
-      expect(screen.getByLabelText(/answer/i)).toHaveDisplayValue("");
+
+        jest.spyOn(global, 'fetch').mockImplementation(() => mockFetchPromise);  
+        
+        const utils = render(<Calculator />);
+        utils.getByLabelText(/answer/i).value='25';   
+        fireEvent.change(utils.getByLabelText(/answer/i), {
+            target: {value: '25'}
+            });
+        fireEvent.click(screen.getByText(/Clear/i));
+        expect(screen.getByLabelText(/answer/i)).toHaveDisplayValue("");
   })
 
   test('When delete is called once only one character is deleted', () => {
-      const utils = render(<Calculator />);
-      fireEvent.click(utils.getByText('7'));
-      fireEvent.click(utils.getByText('3'));
-      fireEvent.click(utils.getByText('1'));
-      fireEvent.click(utils.getByText(/Delete/i));
-      expect(utils.getByLabelText(/question/i)).toHaveDisplayValue('73');
+        const mockResponseSuccess = {};
+        const mockJsonPromise = Promise.resolve(mockResponseSuccess);
+        const mockFetchPromise = Promise.resolve( {
+            json: mockJsonPromise,
+        });
+
+        jest.spyOn(global, 'fetch').mockImplementation(() => mockFetchPromise);  
+        const utils = render(<Calculator />);
+        fireEvent.click(utils.getByText('7'));
+        fireEvent.click(utils.getByText('3'));
+        fireEvent.click(utils.getByText('1'));
+        fireEvent.click(utils.getByText(/Delete/i));
+        expect(utils.getByLabelText(/question/i)).toHaveDisplayValue('73');
   });

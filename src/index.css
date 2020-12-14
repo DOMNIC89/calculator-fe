@@ -34,7 +34,7 @@ code {
   margin-bottom: 20px; 
   border-radius: 2px; 
   border: 2px solid black; 
-  color: #4CAF50; 
+  color: #6e7506; 
 }
 
 .mainCalc {
@@ -53,9 +53,28 @@ code {
   text-align: right;
 }
 
+.mainFeed {
+  background-color: cornsilk;
+  padding: 10px;
+}
+
+.feed-detail {
+  display: block;
+  font-size: 80%;
+  margin: 10px;
+}
+
+.feed-detail-name {
+  color: crimson;
+}
+
+.question-answer {
+  color: rgb(100, 85, 0);
+}
+
 input[type="button"] {
   width: 100px;
-  background: #4CAF50;
+  background: #d5d819;
   border: 1px solid #222;
   padding: 10px 20px;
   color: black;
