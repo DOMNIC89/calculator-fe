@@ -12,7 +12,7 @@ const updateFeeds = (list) => {
 const Feed = (props) => {
     const messages = props.feeds;
     return(
-        <div className="mainFeed">
+        <div className="mainFeed" data-testid="mainFeed">
             {updateFeeds(messages)}
         </div>
     );

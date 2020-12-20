@@ -65,14 +65,17 @@ class Calculator extends React.Component {
         })
         this.client.subscribe("calculatorsezzle");
         this.client.on('message', function(topic, message) {
-            const list = this.state.messages;
-            if(list.length >= 10) {
-                list.splice(-1);
-            }
-            this.setState({messages: [JSON.parse(message.toString()), ...list]});
-           
+            this.setState(
+                {
+                    messages: JSON.parse(message.toString())
+                });
         }.bind(this));
         this.fetchLastActivities();
+    }
+
+    componentWillUnmount() {
+        console.log("Disconnecting the mqtt socket");
+        this.client.end(true, this.client.options, function() {});
     }
 
     handleClick(event) {
@@ -111,6 +114,7 @@ class Calculator extends React.Component {
     }
 
     logActivity = (ans) => {
+        console.log(new Date().toISOString())
         const requestOptions = {
             method: 'POST',
             headers: {'content-type': 'application/json'},

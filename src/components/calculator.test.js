@@ -2,6 +2,13 @@ import {render, screen, fireEvent} from '@testing-library/react';
 import Calculator from './calculator';
 import {config} from '../Constants';
 
+
+
+beforeAll(()=> {
+    jest.spyOn(Date.prototype, 'toISOString').mockReturnValue('2020-12-20T05:42:55.770Z');
+});
+
+
 test('Check the presence of title', () => {
     render(<Calculator />);
     const screenTitle = screen.getByText(/Sezzle Calculator/i);
@@ -38,12 +45,13 @@ test('Check the presence of title', () => {
       fireEvent.click(screen.getByText("*"));
       fireEvent.click(screen.getByText(/5/i));
       fireEvent.click(screen.getByText(/=/i));
-      const requestPayload = {"body": JSON.stringify({
-        question: "7*5",
-        answer: "35",
-        timestamp: new Date().toISOString(),
-        user: localStorage.getItem('username')
-    })}
+      const requestPayload = {
+          "body": JSON.stringify({question: "7*5",answer: "35",timestamp: new Date().toISOString(),user: localStorage.getItem('username')}), 
+          "headers": {
+            "content-type": "application/json",
+          }, 
+          "method": "POST",
+        }
       expect(global.fetch).toHaveBeenCalledWith(config.url.POST_CALCULATOR_ACTIVITY, requestPayload);
       expect(screen.getByLabelText("answer")).toHaveValue('35');
   })
@@ -96,3 +104,7 @@ test('Check the presence of title', () => {
         fireEvent.click(utils.getByText(/Delete/i));
         expect(utils.getByLabelText(/question/i)).toHaveDisplayValue('73');
   });
+
+  afterAll(() => {
+      jest.restoreAllMocks();
+  })
