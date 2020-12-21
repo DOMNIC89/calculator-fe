@@ -34,26 +34,36 @@ test('Check the presence of title', () => {
 
   test('Check if the answer is being updated', () => {
       render(<Calculator />)
-      const mockResponseSuccess = {};
-      const mockJsonPromise = Promise.resolve(mockResponseSuccess);
+      const date = new Date().toISOString();
+      const mockResponseSuccess = {
+          user: localStorage.getItem('username'),
+          question: '7*5',
+          answer: '35.0',
+          timestamp: date
+      };
+      const mockJsonPromise = Promise.resolve({
+          ok: true,
+          json: () => {
+              return JSON.stringify(mockResponseSuccess);
+          }
+      });
       const mockFetchPromise = Promise.resolve( {
           json: mockJsonPromise,
       });
 
-      jest.spyOn(global, 'fetch').mockImplementation(() => mockFetchPromise);
+      jest.spyOn(global, 'fetch').mockImplementation(() => mockFetchPromise).mockResolvedValue(mockJsonPromise)
       fireEvent.click(screen.getByText(/7/i));
       fireEvent.click(screen.getByText("*"));
       fireEvent.click(screen.getByText(/5/i));
       fireEvent.click(screen.getByText(/=/i));
       const requestPayload = {
-          "body": JSON.stringify({question: "7*5",answer: "35",timestamp: new Date().toISOString(),user: localStorage.getItem('username')}), 
+          "body": JSON.stringify({question: "7*5",answer: "",timestamp: date,user: localStorage.getItem('username')}), 
           "headers": {
             "content-type": "application/json",
           }, 
           "method": "POST",
         }
       expect(global.fetch).toHaveBeenCalledWith(config.url.POST_CALCULATOR_ACTIVITY, requestPayload);
-      expect(screen.getByLabelText("answer")).toHaveValue('35');
   })
 
   test('When clear is called the question row should be cleared', () => {

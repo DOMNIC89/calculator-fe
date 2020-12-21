@@ -83,20 +83,8 @@ class Calculator extends React.Component {
         switch (value) {
             case '=':
                 //todo: call service api to log the action and also to take name of the user.
-                var ans = ''
                 if (this.state.question !== '') {
-                    try {
-                        ans = eval(this.state.question)
-                    } catch(err) {
-                        this.setState({answer: "Math error"})
-                    }
-                    if (ans === undefined) {
-                        this.setState({answer: "Math error"})
-                    } else {
-                        this.setState({answer: ans, question: ''})
-                    }
-                    // call server to log this activity
-                    this.logActivity(ans);
+                    this.logActivity();
                 }
                 break;
             case 'Clear':
@@ -113,7 +101,7 @@ class Calculator extends React.Component {
         }
     }
 
-    logActivity = (ans) => {
+    logActivity = () => {
         console.log(new Date().toISOString())
         const requestOptions = {
             method: 'POST',
@@ -121,7 +109,7 @@ class Calculator extends React.Component {
             body: JSON.stringify(
                 {
                     question: this.state.question, 
-                    answer: ans.toString(), 
+                    answer: '', 
                     timestamp: new Date().toISOString(),
                     user: localStorage.getItem('username')
                 })
@@ -129,11 +117,19 @@ class Calculator extends React.Component {
 
         fetch(config.url.POST_CALCULATOR_ACTIVITY, requestOptions)
             .then(async response => {
+                console.log(response);
+                const data = await response.json();
+                console.log(data)
                 if (!response.ok) {
                     // show a toast to display the message
-                    
+                    console.log(data);
                     return Promise.reject({});
                 }
+                this.setState({
+                    answer: parseFloat(data.answer),
+                    question: ''
+                })
+                console.log(data.answer);
             })
             .catch(err => {
                 console.log("there was some error", err)
